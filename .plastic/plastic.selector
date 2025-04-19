@@ -1,0 +1,3 @@
+repository "HikeUpper/HikeUpper@2475793128728@cloud"
+  path "/"
+    smartbranch "/main/development"

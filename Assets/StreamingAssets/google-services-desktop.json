@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "417752867801",
+    "firebase_url": "https://hike-upper-default-rtdb.firebaseio.com",
+    "project_id": "hike-upper",
+    "storage_bucket": "hike-upper.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:417752867801:android:f42641a46ce182cc8fefc8",
+        "android_client_info": {
+          "package_name": "com.diana.hikeupper"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDaVV7LN-DMbwjs4cP2QWitq-_6GxjDHy0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
