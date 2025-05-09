@@ -1,5 +1,7 @@
 using Firebase.Database;
 using Firebase.Extensions;
+using Firebase;
+using Firebase.Auth;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -7,71 +9,90 @@ using System.Threading.Tasks;
 
 public class DataBaseManager : MonoBehaviour
 {
-    [SerializeField] TMP_InputField Name;
-    [SerializeField] TMP_InputField ID;
-    // [SerializeField] TMP_Text loadNameText;
-    // [SerializeField] TMP_Text loadIDText;
-    // [SerializeField] TMP_InputField searchInput;
-    
-    private string userID;
-    private DatabaseReference dataBaseReference;
+    [SerializeField] private TMP_InputField Name;
+    [SerializeField] private TMP_InputField Email;
+    [SerializeField] private TMP_InputField Password;
+    [SerializeField] private Button SignUpButton;
 
+    private DatabaseReference dbRef;
+    private FirebaseAuth auth;
 
     void Start()
     {
-        // Initialize the Firebase reference
-        dataBaseReference = FirebaseDatabase.DefaultInstance.RootReference;
-        Debug.Log("Firebase Initialized!");
+        auth = FirebaseAuth.DefaultInstance;
+        FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
+        {
+            var dependencyStatus = task.Result;
+            if (dependencyStatus == DependencyStatus.Available)
+            {
+                Debug.Log("Firebase ready!");
+                dbRef = FirebaseDatabase.DefaultInstance.RootReference;
+            }
+            else
+            {
+                Debug.LogError("Could not resolve all Firebase dependencies: " + dependencyStatus);
+            }
+        });
+
     }
 
 
-    public void CreateUser() 
+
+    public void CreateUser()
     {
-        // Create a new User object
-        User newUser = new User(Name.text, int.Parse(ID.text));
-        string json = JsonUtility.ToJson(newUser);
-        Debug.Log(json);
+        string name = Name.text.Trim();
+        string email = Email.text.Trim();
+        string password = Password.text;
 
-        // Generate a unique key and save the user data under that key
-        string key = dataBaseReference.Child("users").Push().Key;
-        dataBaseReference.Child("users").Child(key).SetRawJsonValueAsync(json);
+        if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+        {
+            Debug.LogWarning("⚠️ Please fill in all fields.");
+            return;
+        }
+
+        auth.CreateUserWithEmailAndPasswordAsync(email, password).ContinueWithOnMainThread(authTask =>
+        {
+            if (authTask.IsCanceled)
+            {
+                Debug.LogError("🚫 CreateUserWithEmailAndPasswordAsync was canceled.");
+                return;
+            }
+            if (authTask.IsFaulted)
+            {
+                if (authTask.Exception != null)
+                {
+                    foreach (var ex in authTask.Exception.Flatten().InnerExceptions)
+                    {
+                        if (ex is FirebaseException firebaseEx)
+                            Debug.LogError($"❌ Firebase error: Code={firebaseEx.ErrorCode}, Message={firebaseEx.Message}");
+                        else
+                            Debug.LogError("❌ Non-Firebase error: " + ex.Message);
+                    }
+                }
+                return;
+            }
+
+            // ✅ Success
+            FirebaseUser newUserAuth = authTask.Result.User;
+            Debug.LogFormat("✅ Firebase user created successfully: {0} ({1})", newUserAuth.Email, newUserAuth.UserId);
+
+            // Prepare user profile
+            User newUser = new User(name, email, password, level: 0, xp: 0, friends: new Friend[0]);
+            string json = JsonUtility.ToJson(newUser);
+
+            dbRef.Child("users").Child(newUserAuth.UserId)
+                .SetRawJsonValueAsync(json).ContinueWithOnMainThread(dbTask =>
+            {
+                if (dbTask.IsCompletedSuccessfully)
+                {
+                    Debug.Log("✅ User profile successfully saved to database!");
+                }
+                else
+                {
+                    Debug.LogError("❌ Failed to save user profile to database: " + dbTask.Exception?.Message);
+                }
+            });
+        });
     }
-
-    // // Function to load user data based on the provided ID entered in the input field
-    // public void LoadUserData()
-    // {
-    //     string searchID = searchInput.text; // Get the ID entered by the user
-
-    //     // Query to find the user by ID
-    //     dataBaseReference.Child("users")
-    //         .OrderByChild("id")
-    //         .EqualTo(int.Parse(searchID))  // Search by the ID entered
-    //         .GetValueAsync().ContinueWithOnMainThread(task =>
-    //         {
-    //             if (task.IsCompleted && task.Result.Exists)
-    //             {
-    //                 // Manually iterate through the children to get the first match
-    //                 foreach (DataSnapshot userSnapshot in task.Result.Children)
-    //                 {
-    //                     string name = userSnapshot.Child("name").Value.ToString();
-    //                     string id = userSnapshot.Child("id").Value.ToString();
-
-    //                     // Ensure UI update happens on the main thread
-    //                     UnityMainThreadDispatcher.Instance().Enqueue(() =>
-    //                     {
-    //                         loadNameText.text = name;  // Update name on UI
-    //                         loadIDText.text = id;      // Update ID on UI
-    //                     });
-
-    //                     Debug.Log("User Data Loaded: " + name + ", " + id);
-    //                     break; // Exit after the first match
-    //                 }
-    //             }
-    //             else
-    //             {
-    //                 Debug.LogError("No user found with ID: " + searchID);
-    //             }
-    //         });
-    // }
 
 }
