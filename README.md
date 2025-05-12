@@ -50,7 +50,7 @@ By gamifying eco-friendly actions, HikeUpper encourages users to keep trails cle
 
 ## 🎥 Demo Video
 
-📽️ **[Watch the demo here]([#](https://www.youtube.com/shorts/Vnvk6AodvH4))**  
+https://www.youtube.com/shorts/Vnvk6AodvH4
 ---
 
 ## 🔮 Planned Features
