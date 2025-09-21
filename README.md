@@ -50,14 +50,14 @@ By gamifying eco-friendly actions, HikeUpper encourages users to keep trails cle
 
 ## 🎥 Demo Video
 
-https://www.youtube.com/shorts/Vnvk6AodvH4
+https://youtube.com/shorts/KuJ28QvEszc
 ---
 
 ## 🔮 Planned Features
 
 ### 🧠 AI Image Verification for Garbage Detection
 
-Integrate an AI model to automatically verify that uploaded photos actually contain garbage before accepting them.
+Integrate an AI model to verify that uploaded photos automatically actually contain garbage before accepting them.
 
 **Enhancement Suggestion:**  
 Train the model with diverse litter datasets and improve accuracy over time using community feedback.
